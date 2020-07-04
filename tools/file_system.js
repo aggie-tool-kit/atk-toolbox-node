@@ -33,15 +33,35 @@ let unixToWindowsPath = (unixPath) => {
 module.exports = {
     windowsToUnixPath,
     unixToWindowsPath,
-    join:       (...args)=>ensureUnixPath(path.join(...args)),
-    dirname:    path.dirname,
-    basename:   path.basename, // TODO: change to POSIX bas
-    extname:    path.extname,
-    isAbsolute: (aPath) => doTry(_=>aPath[0]=="/"),
-    exists:     (aPath) => fs.existsSync(aPath),
-    isFolder:   (aPath) => doTry(_=>fs.statSync(aPath).isDirectory()),
-    cwd:        ()=>ensureUnixPath(process.cwd()),
-    walkUp:     (aPath)=> {
+    join:              (...args)=>ensureUnixPath(path.join(...args)),
+    dirname:           path.dirname,
+    listParentFolders: (aPath)=> {
+            let pieces = []
+            if (path.isAbsolute(aPath)) {
+                pieces.push("/")
+            }
+            // add all the parent folders
+            return pieces.concat(path.dirname(module.exports.normalize(aPath)).split("/").filter(e=>e.length!=0))
+        },
+    basename:          path.basename, // TODO: change to POSIX bas
+    extname:           path.extname,
+    normalize:         (aPath) => ensureUnixPath(path.normalize(aPath)),
+    pathPieces:        (aPath) => {
+            let extension = path.extname(aPath)
+            let basename = path.basename(aPath)
+            let basenameNoExtension = basename.slice(0, basename.length - extension.length)
+            return {
+                parentFolders: module.exports.listParentFolders(aPath),
+                coreName: basenameNoExtension,
+                extension,
+            }
+        },
+    isAbsolute:        (aPath) => doTry(_=>aPath[0]=="/"),
+    exists:            (aPath) => fs.existsSync(aPath),
+    isFolder:          (aPath) => doTry(_=>fs.statSync(aPath).isDirectory())||false,
+    isFile:            (aPath) => doTry(_=>fs.existsSync(aPath)&&!fs.statSync(aPath).isDirectory())||false,
+    cwd:               ()=>ensureUnixPath(process.cwd()),
+    walkUp:            (aPath) => {
             let pathsFromWalkUp = [ aPath ]
             // until we hit root
             while (path.dirname(aPath) != aPath) {
@@ -50,7 +70,7 @@ module.exports = {
             }
             return pathsFromWalkUp
         },
-    findFileInWalkUp: (file) => {
+    findFileInWalkUp:  (file) => {
             let possiblePaths = module.exports.walkUp(process.cwd()).map(each=>path.join(each, file))
             for (let each of possiblePaths) {
                 // if the file exists return the path
@@ -59,8 +79,10 @@ module.exports = {
                 }
             }
         },
-    read: (filepath) => doTry(_=>fs.readFileSync(filepath, "utf-8"))||null,
-    ls: (path=".")=> fs.readdirSync(path),
+    read:              (filepath) => doTry(_=>fs.readFileSync(filepath, "utf-8"))||null,
+    ls:                (aPath=".") => fs.readdirSync(aPath),
+    listFiles:         (aPath=".") => fs.readdirSync(aPath).filter(each=>module.exports.isFile(module.exports.join(aPath,each))),
+    listFolders:       (aPath=".") => fs.readdirSync(aPath).filter(each=>module.exports.isFolder(module.exports.join(aPath,each))),
     downloadAsync: ({ url }) =>
         new Promise((resolve, reject) => {
             https
