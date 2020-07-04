@@ -1,0 +1,12 @@
+(using_atk_version): 1.1.0
+(project):
+    (commands):
+        run: |
+            parcel build --target="node" --bundle-node-modules --out-file="compiled_info.js" ./commands/info.js \
+            && nexe --target="mac-x64-14.5.0" --input="./dist/compiled_info.js" \
+            && ./compiled_info '(project)'
+        bundle: parcel build --target="node" --bundle-node-modules --out-file="compiled_info.js" ./commands/info.js
+        build_executable_mac: nexe --target="mac-x64-14.5.0" --input="./dist/compiled_info.js" --resource="./node_modules" && ./info hi
+        
+    (paths):
+        tools: ./tools 
