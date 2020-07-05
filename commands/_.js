@@ -41,8 +41,9 @@ if (get(info, ["(using_atk_version)"]) == "1.1.1") {
                 commands[basenameNoExtension] = [ commandPath ]
             } else if (!OS.isWindows && extension == "") {
                 // make sure user can run the file
-                let giveCurrentUserExecutePermission = fs.constants.S_IXUSR
-                fs.chmodSync(commandPath, giveCurrentUserExecutePermission)
+                // FIXME: make it not override the existing chmod permissions
+                // let giveCurrentUserExecutePermission = fs.constants.S_IXUSR
+                // fs.chmodSync(commandPath, giveCurrentUserExecutePermission)
                 // TODO: add error if command name already exists
                 commands[basenameNoExtension] = [ commandPath ]
             } else {
@@ -63,7 +64,7 @@ if (get(info, ["(using_atk_version)"]) == "1.1.1") {
         ...get(info, COMMANDS_INFO_LOCATION, {})
     }
 
-    Console.addToPath()
+    Console.addToPath(DEFAULT_COMMANDS_DIRECTORY)
     
     // 
     // run the correct command (or show the avalible commands)
@@ -92,8 +93,8 @@ if (get(info, ["(using_atk_version)"]) == "1.1.1") {
                 )
             // if its just a command line code
             } else {
-                // FIXME: don't use space-join, needs to be escaped
-                child_process.execSync(`${command} ${commandArgs.join(" ")}`, {stdio: 'inherit'})
+                // FIXME: don't use space-join, needs to be escaped for windows
+                child_process.execSync(`${command} ${commandArgs.map(each=>"'"+each.replace(/'/,'"\'"')+"'").join(" ")}`, {stdio: 'inherit'})
             }
         }
     } 

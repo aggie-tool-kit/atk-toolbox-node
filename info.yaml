@@ -7,7 +7,7 @@
             && ./compiled_info '(project)'
         bundle: parcel build --target="node" --bundle-node-modules --out-file="compiled_info.js" ./commands/info.js
         build_executable_mac: nexe --target="mac-x64-14.5.0" --input="./dist/compiled_info.js" --resource="./node_modules" && ./info hi
-        say_hi: echo hello
+        check_info: info
     
     # (command_associations):
     #     .sh: bash
