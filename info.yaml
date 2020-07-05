@@ -15,3 +15,12 @@
         
     (paths):
         tools: ./tools 
+
+todo:
+    - build the glue-executable for underscore
+    - add the did-you-mean: |
+        let Matcher = require('did-you-mean')
+        // Create a matcher with a list of values
+        let m = (new Matcher('init install update upgrade')).setThreshold(3).ignoreCase()
+        console.log(`m.get('UPFRADE') is:`,m.get('UPFRADE'))
+    - create the auto-generated shadow executable folder
